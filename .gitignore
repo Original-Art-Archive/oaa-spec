@@ -1,0 +1,21 @@
+# OS files
+Thumbs.db
+.DS_Store
+
+# Editor files
+.vscode/
+.idea/
+
+# Build and generated output
+dist/
+build/
+coverage/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Local scratch files
+*.tmp
+*.bak
+*.log
