@@ -15,3 +15,9 @@ include:
   - "**/.oacollection"
   - "**/.oaartwork"
   - "**/.oagallery"
+
+defaults:
+  - scope:
+      path: "google*.html"
+    values:
+      sitemap: false
