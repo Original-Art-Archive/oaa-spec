@@ -21,12 +21,14 @@ This repository is maintained by Remgrandt Games LLC.
 ## Repository Contents
 
 - [SPEC.md](SPEC.md) defines the archive format and requirements outside manifest-local JSON validation.
-- [examples/](examples/) contains draft example folder layouts and manifests.
-- [schema/](schema/) contains the normative JSON Schema for OAA 0.1 dot-manifest structure.
-- [requirements/](requirements/) contains validator requirement traceability for the 0.1 Draft.
-- [docs/](docs/) contains supporting documentation for implementers.
-- [assets/](assets/) contains OAA visual assets and mark-use guidance.
+- [docs/](docs/index.md) contains supporting documentation for implementers.
+- [examples/](examples/README.md) contains draft example folder layouts and manifests.
+- [schema/](schema/README.md) contains the normative JSON Schema for OAA 0.1 dot-manifest structure.
+- [requirements/](requirements/README.md) contains validator requirement traceability for the 0.1 Draft.
+- [proposals/](proposals/README.md) contains the proposal process for draft format changes.
+- [assets/](assets/README.md) contains OAA visual assets and mark-use guidance.
 - [LICENSES/](LICENSES/) contains the full license texts.
+- [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) describe release history, contribution expectations, security policy, and draft questions.
 
 Implementers should treat [SPEC.md](SPEC.md) as authoritative for the archive format as a whole. The JSON Schema is authoritative for manifest-local JSON structure.
 

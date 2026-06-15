@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.1.1
+
+- Adds GitHub Pages configuration for the public specification site.
+- Adds file catalog pages for example folders so dot-manifest fixtures are reachable from the site navigation.
+- Updates repository navigation links so Markdown documentation is reachable from the root README.
+
 ## 0.1 Public Draft
 
 - Initial public draft release of the Original Art Archive (OAA) Format.
