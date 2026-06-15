@@ -1,5 +1,9 @@
 title: Original Art Archive Format
 description: OAA is an open, portable archive format for original comic art collection data.
+
+url: "https://original-art-archive.github.io"
+baseurl: "/oaa-spec"
+
 remote_theme: pages-themes/modernist@v0.2.0
 
 plugins:
@@ -8,6 +12,6 @@ plugins:
   - jekyll-sitemap
 
 include:
-  - ".oacollection"
-  - ".oaartwork"
-  - ".oagallery"
+  - "**/.oacollection"
+  - "**/.oaartwork"
+  - "**/.oagallery"
