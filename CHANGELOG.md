@@ -2,6 +2,11 @@
 
 # Changelog
 
+## 0.1.2
+
+- Updates maintainer, copyright, and mark-policy references to Remgrandt Works.
+- Adds the trade-name notice to the license.
+
 ## 0.1.1
 
 - Adds GitHub Pages configuration for the public specification site.

@@ -16,7 +16,7 @@ In practical terms, an `.oaa` archive is a portable collection folder packaged a
 
 OAA metadata separates portable base fields from external links and extension blocks. This lets tools share common data while preserving provider-specific fields for services such as ComicArtFans, SNIKT.com, and Raremarq.
 
-This repository is maintained by Remgrandt Games LLC.
+This repository is maintained by Remgrandt Works.
 
 ## Repository Contents
 
@@ -44,8 +44,8 @@ The OAA repository uses a split-license model:
 - Examples, fixtures, and sample archives created for this repository: CC0 1.0
 - Machine-readable schemas: CC0 1.0, or MIT when incorporated into software
 
-Third-party or public-source media included or referenced by examples is governed by its original source rights statement and is not relicensed by Remgrandt Games LLC unless explicitly stated in the example directory.
+Third-party or public-source media included or referenced by examples is governed by its original source rights statement and is not relicensed by Remgrandt Works unless explicitly stated in the example directory.
 
-The names "Original Art Archive" and "OAA" may be used to truthfully describe compatibility with the format, but may not be used to imply official status, endorsement, certification, or maintenance by the OAA project or Remgrandt Games LLC.
+The names "Original Art Archive" and "OAA" may be used to truthfully describe compatibility with the format, but may not be used to imply official status, endorsement, certification, or maintenance by the OAA project or Remgrandt Works.
 
 See [LICENSE.md](LICENSE.md) for details.
