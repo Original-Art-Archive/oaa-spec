@@ -13,3 +13,5 @@ The source of truth is [../SPEC.md](../SPEC.md). These docs provide explanatory 
 - [Conformance](conformance.md)
 - [Versioning](versioning.md)
 - [Provider Extension Block Examples](provider-extensions.md)
+- [0.1-to-1.0 Migration](migration-0.1-to-1.0.md)
+- [OAA 1.0.0 Release Notes](release-1.0.0.md)

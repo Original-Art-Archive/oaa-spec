@@ -2,17 +2,14 @@
 
 # Schema
 
-This directory contains the normative JSON Schema for OAA 0.1 dot-manifest files.
+[1.0/oaa-manifest.schema.json](1.0/oaa-manifest.schema.json) is the normative manifest-local JSON Schema for the OAA 1.0. [SPEC.md](../SPEC.md) remains authoritative for the archive as a whole, including semantics, security, privacy, and cross-file integrity.
 
-[oaa-manifest.schema.json](oaa-manifest.schema.json) is normative for manifest-local JSON structure: field presence, JSON types, and constraints expressible within a single manifest document.
+The schema's `$id` identifies its immutable release URL. Tools can load the local file without resolving that URL over the network.
 
-[../SPEC.md](../SPEC.md) remains normative for archive layout, cross-file integrity, ZIP behavior, security, privacy, and semantic reader/writer requirements.
+The root schema accepts the union of manifest shapes. Select the appropriate `$defs/collectionManifest`, `$defs/galleryManifest`, or `$defs/artworkManifest` using the manifest's role and path. Do not infer its role from optional JSON members: unknown optional fields are permitted.
 
-The [reference validator](https://github.com/Original-Art-Archive/oaa-validator) loads this schema with `jsonschema` for manifest-local checks, then applies additional archive-wide and cross-reference validation rules.
+The reference validator combines this schema with semantic checks for real calendar dates, absolute non-local URLs, finite numeric values, actual embedded sizes, duplicate JSON members, path safety, references, and bounded archive processing. JSON Schema alone cannot establish archive validity; format annotations are not a substitute for these checks.
 
-The schema reflects the 0.1 base-field portability model:
+Provider blocks are opaque JSON objects, including nested provider JSON and same-named fields. They cannot override base-field meaning. Existing closed base value sets remain enforced; display-oriented strings remain text.
 
-- Closed base value sets are enforced for `public_metadata.publication_status`, `files[].file_kind`, and `files[].image_role`.
-- Constrained strings, such as IDs, paths, provider identifiers, media types, URLs, and dates, are validated by syntax or structure where JSON Schema can express that validation.
-- Display-oriented strings, such as `public_metadata.media`, `public_metadata.artwork_type`, `artist_credits[].role`, `public_metadata.for_sale_status`, and `files[].format`, are represented as strings or null values and are not treated as controlled OAA machine values.
-- Provider-specific and application-specific values should be preserved in extension blocks, not written into closed base fields.
+[oaa-manifest.schema.json](oaa-manifest.schema.json) is the unchanged historical **0.1** schema, not an alias for 1.0.

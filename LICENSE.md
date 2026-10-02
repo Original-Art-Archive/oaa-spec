@@ -67,7 +67,7 @@ CC0-1.0 OR MIT
 
 ## Names and Marks
 
-The names "Original Art Archive," "OAA," and associated project logos, marks, or branding are not licensed under the documentation, example, or schema licenses above.
+The names "Original Art Archive," "OAA," and associated project logos, marks, or branding are not licensed under the documentation, example, schema, or software licenses.
 
 Visual assets in `assets/`, including logo, file icon, and badge SVG files, are governed by this names-and-marks notice and the usage guidance in `assets/README.md` unless another written permission grant applies.
 

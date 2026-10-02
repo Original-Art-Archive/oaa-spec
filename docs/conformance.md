@@ -2,58 +2,33 @@
 
 # Conformance
 
-This page summarizes draft OAA conformance levels for archives and parsers. The source of truth is [../SPEC.md](../SPEC.md).
+This page summarizes the four core classes in [SPEC.md](../SPEC.md).
 
-## Valid Archive
+| Class | Meaning |
+| --- | --- |
+| Valid Archive | Satisfies the 1.0 container, manifest, reference, path, field, and integrity requirements. |
+| Structural Reader | Validates structure, resolves collection-authoritative records and embedded files, and implements required safety and processing behavior. |
+| Metadata Reader | Also a Structural Reader; imports or displays base metadata and external links, including unknown providers. |
+| Conforming Writer | Produces Valid Archives. |
 
-A Valid Archive follows the container, `mimetype`, layout, manifest, path, and field rules in the specification.
+Reader support includes Store, Deflate, and ZIP64 within declared capacities. Readers need not extract, decode, render, or preview media. Extracting readers need separate evidence for destination confinement, pre-existing filesystem redirections, and case/Unicode collision handling without silent overwrite.
 
-A Valid Archive uses manifest `schema_version` string `"0.1"` for this draft.
+## Results and Claims
 
-A Valid Archive uses the draft media type `application/vnd.original-art-archive+zip`. The media type is provisional until registered with IANA.
+An archive-validity violation makes an archive invalid. Advisory warnings alone do not. Optional recovery of usable records does not make the original archive valid, and skipped or lost content needs to be reported.
 
-A Valid Archive does not contain encrypted archive entries.
+Unsupported versions, capacity limits, and destination limitations are separate processing outcomes. Stopping before validation completes cannot establish full validity.
 
-A Valid Archive stores each `files[]` entry as an embedded archive file and keeps collection gallery/artwork reference IDs and paths unique.
+The reference validator checks archive content and its own bounded-processing behavior. Passing it does not certify another implementation's safety, privacy, extraction, rendering, or preservation behavior. See the [release verification scope](release-1.0.0.md) for the exact tested scope.
 
-Within each gallery manifest, artwork membership IDs are unique.
+## Preservation and Privacy
 
-## Reader Conformance Levels
+Unknown optional fields, external links, extension blocks, and embedded bytes should be preserved when practical. Import plus export is not evidence of lossless preservation. Claims need a stated scope, evidence, and limitations.
 
-Reader support is described with narrower levels rather than one broad reader claim.
+There is no best-effort “Round-Trip Implementation” conformance category in 1.0. The expanded preservation profile is deferred.
 
-Reader conformance levels are cumulative unless otherwise stated.
+Private metadata, including its extensions, stays private unless separately authorized for disclosure. `is_public` is metadata, not authorization to publish every field or attachment. Unknown extensions and supporting files are not automatically public.
 
-### Structural Reader
+## Media Type
 
-A Structural Reader can validate package structure, parse manifests, resolve galleries and artworks, and locate embedded files according to the specification.
-
-Structural Readers do not need to decode, render, preview, or open any embedded file type.
-
-Structural Readers support Store and Deflate ZIP compression methods.
-
-### Metadata Reader
-
-A Metadata Reader can import or display OAA base metadata and external links.
-
-Metadata Readers must not reject unknown external link providers. They should preserve unknown external links and extension blocks when practical.
-
-A Metadata Reader is also a Structural Reader.
-
-### Round-Trip Implementation
-
-A Round-Trip Implementation can read OAA and later write OAA while preserving unknown optional fields, unknown external links, and unknown extension blocks when practical.
-
-A Round-Trip Implementation is both a reader and writer.
-
-## Embedded File Handling
-
-OAA conformance does not require support for decoding JPEG, PNG, TIFF, PDF, video, or any other embedded data file type.
-
-Readers validate archive structure, manifests, references, and path safety. Opening or rendering embedded files is implementation-specific and at the reader's or user's risk.
-
-Readers should preserve embedded file metadata and bytes when practical, even when the reader cannot decode or render the file.
-
-## Conforming Writer
-
-A Conforming Writer produces Valid Archives, including the required root `mimetype`, according to the specification.
+The identifier is `application/vnd.original-art-archive+zip`. This release makes no registration claim. Registration is administrative follow-up, not a release prerequisite.

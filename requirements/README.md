@@ -2,10 +2,15 @@
 
 # Requirements Traceability
 
-The OAA specification is written for human readers and does not include visible requirement IDs inline.
+The normative rules are in [SPEC.md](../SPEC.md). The supporting [oaa-1.0.yaml](oaa-1.0.yaml) catalog assigns stable requirement IDs; [traceability.md](traceability.md) maps them to rules and fixtures. The [0.1 catalog](oaa-0.1.yaml) remains unchanged for historical use.
 
-Normative requirements for the OAA 0.1 Draft are tracked in [oaa-0.1.yaml](oaa-0.1.yaml).
+Automated rules cover archive/content conditions and explicitly classified processing outcomes. Processing findings (unsupported version, configured capacity, unavailable input) are not archive-invalidity findings. Reader, writer, privacy, and other behavior that cannot be inferred from an archive is tracked separately, with evidence in the [release verification scope](../docs/release-1.0.0.md).
 
-The generated traceability matrix in [traceability.md](traceability.md) maps OAA requirement IDs to specification sections and validation coverage where applicable.
+The tests require every automated requirement to have rule and expected-finding fixture coverage, and every finding to reference known requirement IDs. Fixture coverage does not prove another application's implementation behavior.
 
-Validator rule and fixture policy lives in the separate [OAA validator repository](https://github.com/Original-Art-Archive/oaa-validator).
+Regenerate and check the matrix from a checkout of the [validator repository](https://github.com/Original-Art-Archive/oaa-validator):
+
+```powershell
+python requirements/generate_traceability.py
+python requirements/generate_traceability.py --check
+```

@@ -2,35 +2,18 @@
 
 # Versioning
 
-OAA uses two related version forms:
+This page explains [SPEC.md](../SPEC.md); it does not add requirements.
 
-- **Manifest schema versions** are compatibility identifiers stored in manifests as `schema_version`. These use `MAJOR.MINOR` strings, such as `"0.1"`.
-- **Specification release tags** may use SemVer-style `MAJOR.MINOR.PATCH` tags, such as `v0.1.0` or `v0.1.1`.
+Specification release **1.0.0** uses manifest `schema_version: "1.0"`.
 
-The manifest `schema_version` does not include a patch component. A patch release clarifies the specification without changing which archives are valid, so it does not change manifest `schema_version`.
+Release tags use `MAJOR.MINOR.PATCH`. Manifest compatibility identifiers use `MAJOR.MINOR`; they are exact identifiers, not strings to sort to decide support. Readers declare the versions they implement. An unsupported version is an unsupported-input result, not proof that the archive is invalid.
 
-MAJOR manifest schema versions may introduce incompatible changes.
+Patch releases cannot change archive validity or the manifest version. Compatible optional additions may appear in a later 1.x revision. New required fields, incompatible semantics, and additions to closed base value sets require a new major schema version. Unknown optional fields do not change the meaning of known base fields.
 
-MINOR manifest schema versions may add backward-compatible fields or behaviors.
+## Schema Locations
 
-New optional fields may be added in a minor manifest schema version.
+The 1.0 schema lives at [schema/1.0/oaa-manifest.schema.json](../schema/1.0/oaa-manifest.schema.json). Its `$id` identifies the immutable `v1.0.0` publication URL. Local validation uses the checked-in file without network access.
 
-New required fields must not be added except in a major manifest schema version.
+The historical [0.1 schema](../schema/oaa-manifest.schema.json) and [0.1 requirements](../requirements/oaa-0.1.yaml) remain unchanged. Release `v0.1.2` preserves the complete earlier contract. The reference validator in this checkout implements 1.0 only; 0.1 is reported as unsupported.
 
-OAA 1.x readers must ignore unknown optional fields.
-
-## Draft Versions
-
-Versions before 1.0 are drafts and may change incompatibly while the format is being developed.
-
-For the 0.1 draft, each manifest uses the string value:
-
-```json
-{
-  "schema_version": "0.1"
-}
-```
-
-Readers must reject manifests with an unsupported higher required schema version unless they explicitly support that version.
-
-Readers may accept lower schema versions only when they implement compatibility handling for those versions.
+Supporting or migrating 0.1 is a separate, optional capability. Changing the version string alone is not a migration. See the [migration checklist](migration-0.1-to-1.0.md).

@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 
-# Original Art Archive Format 0.1 Draft
+# Original Art Archive (OAA) Format 1.0
 
 ## Status
 
-This document is a draft specification for the Original Art Archive (OAA) Format. Version 0.1 is not a final 1.0 release.
+This document defines specification release 1.0.0 of the Original Art Archive (OAA) Format. Manifests use `schema_version: "1.0"`.
 
 The words MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, and OPTIONAL are used to indicate requirement levels.
 
@@ -14,11 +14,11 @@ OAA defines a platform-neutral archive format for transferring original art coll
 
 The base model is intentionally simple: an `.oaa` file is a ZIP-compatible archive of a portable original art collection directory.
 
-This draft defines a portable collection folder model:
+This specification defines a portable collection folder model:
 
 - A collection folder contains a collection manifest.
-- Gallery folders contain gallery manifests under a `galleries/` directory.
-- Artwork folders contain artwork manifests and associated files under an `artworks/` directory.
+- Gallery folders contain gallery manifests, conventionally under `galleries/`.
+- Artwork folders contain artwork manifests and associated files, conventionally under `artworks/`.
 - Gallery manifests reference artworks by archive-local artwork ID, allowing one artwork to appear in multiple galleries without duplicating the artwork record.
 
 This specification defines the archive folder layout and dot-manifest structure.
@@ -29,7 +29,7 @@ This specification defines the archive folder layout and dot-manifest structure.
 - **Media type**: A string that identifies the archive format. The OAA media type is `application/vnd.original-art-archive+zip`.
 - **Collection**: The top-level original art collection represented by the archive.
 - **Gallery**: A subgroup within a collection.
-- **Artwork**: A record within a gallery, usually associated with one or more files.
+- **Artwork**: A collection record that may belong to zero or more galleries and may have associated files.
 - **Manifest**: A human-readable metadata file inside the archive.
 - **Base field**: A field whose meaning is defined by OAA and can be understood across implementations.
 - **Closed base value set**: A set of valid values for an OAA base field. Values outside the defined set are invalid.
@@ -53,25 +53,25 @@ Readers MAY accept a structurally valid OAA archive even when the filename exten
 
 An OAA archive MUST be a ZIP-compatible archive container.
 
-The draft OAA media type is:
+The OAA media type identifier is:
 
 ```text
 application/vnd.original-art-archive+zip
 ```
 
-This media type is used by the OAA 0.1 draft and may be submitted for registration before or during the 1.0 release process. The OAA media type is provisional until registered with IANA.
+Use of this identifier does not establish IANA registration. Registration is a tracked administrative follow-up, not a release prerequisite. Release documentation MUST state the actual registration status; this release makes no claim of registration.
 
 OAA archive entries MUST NOT be encrypted.
 
-Readers MAY reject encrypted archive entries.
+Readers MUST reject encrypted archive entries.
 
-Writers SHOULD use only the Store and Deflate ZIP compression methods.
+Archive entries MUST use only the Store and Deflate ZIP compression methods.
 
-Structural Readers MUST support Store and Deflate ZIP compression methods.
+Structural Readers MUST support Store, Deflate, and ZIP64 containers within declared resource limits.
 
 An OAA archive SHOULD contain the contents of one collection folder.
 
-An OAA archive does not require `META-INF/container.xml` in version 0.1. The root `.oacollection` manifest is the canonical collection manifest.
+An OAA archive does not require `META-INF/container.xml`. The root `.oacollection` manifest is the canonical collection manifest.
 
 Archive entry names MUST use forward slash `/` separators.
 
@@ -94,6 +94,8 @@ Writers SHOULD emit archive paths in Unicode Normalization Form C (NFC).
 Readers MUST NOT normalize paths before safety validation.
 
 A valid OAA archive MUST NOT contain duplicate archive entries with the same path. Readers MUST reject archives that contain duplicate archive entries with the same path.
+
+Archive entries MUST be regular files or directories. Symbolic links and special filesystem entries MUST NOT be present. A file path MUST NOT also be a directory path or an ancestor of another entry. Readers MUST reject these conflicts and unsafe entry types.
 
 ## Required Files
 
@@ -129,7 +131,7 @@ An artwork directory MAY contain associated image files, documents, video files,
 
 ## Directory Layout
 
-The draft directory layout is:
+The recommended directory layout is:
 
 ```text
 mimetype
@@ -163,7 +165,11 @@ An **archive-relative path** is resolved from the root of the OAA archive.
 
 An **artwork-relative path** is resolved from the directory containing the relevant `.oaartwork` manifest.
 
-The collection manifest is authoritative for locating gallery and artwork manifests inside the archive.
+The collection manifest is authoritative for locating gallery and artwork manifests inside the archive. The `galleries/` and `artworks/` names are recommendations, not validity requirements.
+
+Readers MUST NOT infer additional records by scanning unreferenced entries. Safe unreferenced extra content MAY exist; every entry MUST satisfy archive safety rules. Preservation of all extras is not a core conformance guarantee.
+
+Empty collection registries, empty galleries, metadata-only artworks, and artworks without gallery membership are valid when their required structures are present. Readers MUST NOT invent gallery membership that is absent from the manifests.
 
 Gallery manifests describe gallery membership. They MUST reference artworks by archive-local artwork ID and MUST NOT duplicate mutable artwork metadata such as title, provider IDs, artist credits, media, private metadata, or file lists.
 
@@ -177,13 +183,15 @@ Paths used to locate files within the archive MUST be relative paths within the 
 
 Archive entry paths MUST NOT be absolute paths.
 
+Archive entry paths MUST NOT contain NUL characters or drive-qualified forms, including drive-relative paths such as `C:filename`.
+
 Archive entry paths MUST NOT contain parent-directory traversal segments such as `../`.
 
 ## Manifest Files
 
 OAA manifests are human-readable JSON metadata files.
 
-The current draft manifest files are:
+The manifest files are:
 
 - `.oacollection`: collection manifest
 - `.oagallery`: gallery manifest
@@ -193,7 +201,7 @@ Manifest files MUST be encoded as UTF-8 JSON.
 
 Manifest files MUST contain a JSON object at the top level.
 
-Manifest JSON objects MUST NOT contain duplicate member names. Readers SHOULD reject manifest files with duplicate member names.
+Manifest JSON objects MUST NOT contain duplicate member names. Readers MUST reject duplicate member names and non-JSON numeric tokens, including `NaN` and `Infinity`.
 
 Readers MUST NOT require a byte order mark.
 
@@ -203,17 +211,15 @@ Manifest files SHOULD be written with stable field ordering and two-space indent
 
 Manifest files MUST include `schema_version`.
 
-For this draft, `schema_version` MUST be the string `"0.1"` in `.oacollection`, `.oagallery`, and `.oaartwork` manifests.
+For 1.0, `schema_version` MUST be the string `"1.0"` in `.oacollection`, `.oagallery`, and `.oaartwork` manifests.
 
-The normative JSON Schema for OAA 0.1 dot-manifest JSON structure is [schema/oaa-manifest.schema.json](schema/oaa-manifest.schema.json).
+The normative JSON Schema for OAA 1.0 dot-manifest JSON structure is [schema/1.0/oaa-manifest.schema.json](schema/1.0/oaa-manifest.schema.json). Its immutable versioned identifier is `https://raw.githubusercontent.com/Original-Art-Archive/oaa-spec/v1.0.0/schema/1.0/oaa-manifest.schema.json`. Select the `collectionManifest`, `galleryManifest`, or `artworkManifest` definition according to the manifest path. The root schema accepts any manifest kind but cannot determine the kind from JSON alone.
 
 The JSON Schema is normative for manifest-local field presence, JSON types, and constraints expressible within a single manifest document. This specification remains normative for archive layout, ZIP container requirements, cross-manifest references, embedded file existence, security, privacy, and reader/writer behavior.
 
-All OAA manifest types in one archive SHOULD use the same `schema_version`.
+All OAA manifest types in one archive MUST use the same `schema_version`.
 
-Readers MUST reject manifests with an unsupported higher required schema version unless they explicitly support that version.
-
-Readers MAY accept lower schema versions only when they implement compatibility handling for those versions.
+Readers MUST explicitly recognize each supported schema version. Readers MUST NOT infer compatibility by ordering version strings or assume support for all future 1.x versions from support for `"1.0"`. An unsupported version MUST be reported as unsupported, not assumed invalid under its own contract.
 
 Readers MUST ignore unrecognized optional fields and extension blocks when interpreting a manifest.
 
@@ -223,7 +229,9 @@ Writers SHOULD preserve unrecognized optional fields and extension blocks when r
 
 Required string fields MUST NOT be empty unless this specification explicitly defines an empty-string sentinel for that field.
 
-Required identifier fields MUST NOT contain only whitespace.
+Required names, titles, and identifiers MUST NOT contain only whitespace.
+
+Writers SHOULD omit optional fields whose values are unavailable. `null` is valid only where the field definition explicitly permits it.
 
 Readers SHOULD preserve string values as written.
 
@@ -259,7 +267,7 @@ The root `.oacollection` manifest describes the collection represented by the ar
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `schema_version` | string | Yes | OAA manifest schema version. For this draft, MUST be `"0.1"`. |
+| `schema_version` | string | Yes | OAA manifest schema version. For 1.0, MUST be `"1.0"`. |
 | `id` | string | Yes | Archive-local collection identifier. |
 | `name` | string | Yes | Human-readable collection name. |
 | `external_links` | array | No | External link objects for the collection. |
@@ -299,7 +307,7 @@ Each `.oagallery` manifest describes one gallery within a collection.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `schema_version` | string | Yes | OAA manifest schema version. For this draft, MUST be `"0.1"`. |
+| `schema_version` | string | Yes | OAA manifest schema version. For 1.0, MUST be `"1.0"`. |
 | `id` | string | Yes | Archive-local gallery identifier. |
 | `name` | string | Yes | Human-readable gallery name. |
 | `external_links` | array | No | External link objects for the gallery. |
@@ -326,7 +334,7 @@ An artwork MAY appear in multiple galleries through gallery artwork references. 
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `schema_version` | string | Yes | OAA manifest schema version. For this draft, MUST be `"0.1"`. |
+| `schema_version` | string | Yes | OAA manifest schema version. For 1.0, MUST be `"1.0"`. |
 | `id` | string | Yes | Archive-local artwork identifier. |
 | `title` | string | Yes | Human-readable artwork title. |
 | `external_links` | array | No | External link objects for the artwork. |
@@ -385,9 +393,11 @@ If a provider has no separate stable ID but has a stable object URL, writers MAY
 
 The `url` value is the canonical provider URL for the linked external object. It MAY be an empty string when no stable URL is known.
 
-When `url` is non-empty, it SHOULD be an absolute URL.
+When `url` is non-empty, it MUST be an absolute URL: a syntactically valid absolute URI with a scheme and scheme-specific value. Relative references, whitespace, invalid percent escapes, and local-file references are invalid. HTTP and HTTPS URLs MUST include a host.
 
 The `url` value MUST NOT be a `file://` URL or local filesystem path.
+
+Readers MUST NOT automatically fetch or execute a URL merely because it appears in a manifest.
 
 Readers SHOULD NOT display empty `url` values as clickable links.
 
@@ -403,7 +413,7 @@ Provider examples in this specification are non-normative recommended shapes. Pr
 
 Readers MUST NOT reject an external link only because its `provider` value is unknown.
 
-Readers SHOULD preserve unknown external links when rewriting manifests, when practical.
+Readers SHOULD preserve unknown external links when rewriting manifests. Repeated associations MAY produce a warning but MUST NOT make an archive invalid. Readers MUST NOT merge distinct artworks solely because they share an external link.
 
 Readers MAY display unknown external links generically using their `provider`, `id`, and `url` fields.
 
@@ -515,7 +525,7 @@ Artist credit objects use the following fields:
 | `role` | string or null | No | Display-oriented creator role. Readers SHOULD preserve and display this value but MUST NOT treat it as a controlled OAA value. |
 | `extensions` | object | No | Extension container for artist-credit extension blocks. |
 
-Artist credit objects MUST include at least one of `display_name`, `first_name`, `last_name`, or `role`.
+Artist credit objects MUST include at least one nonempty string value in `display_name`, `first_name`, `last_name`, or `role`.
 
 Artist credits SHOULD use this shape:
 
@@ -541,12 +551,14 @@ The `private_metadata` object MAY contain:
 | --- | --- | --- | --- |
 | `purchase_price` | string or null | No | Private purchase price. |
 | `estimated_value` | string or null | No | Private estimated value. |
-| `purchase_date` | string or null | No | Private acquisition date. When present, use `YYYY-MM-DD`. |
+| `purchase_date` | string or null | No | Private acquisition date. When present and non-null, use a real calendar date in `YYYY-MM-DD` form. |
 | `provenance` | string or null | No | Private provenance and acquisition history. |
 | `personal_notes` | string or null | No | Private collector notes. |
 | `extensions` | object | No | Extension container for private metadata extension blocks. |
 
-Private metadata MUST NOT be treated as public publishing metadata by default.
+Private metadata, including its extension blocks, MUST NOT be treated as public publishing metadata by default.
+
+`is_public` expresses record visibility intent, not blanket publication authorization. Readers MUST NOT publish private metadata, unknown extension content, receipts, or supporting files merely because a record is public. Publication of private or otherwise unclassified content requires explicit user authorization appropriate to that content.
 
 Writers SHOULD provide an option to omit `private_metadata` when creating archives intended for transfer to third-party platforms.
 
@@ -575,6 +587,8 @@ Artwork file entries use the following fields:
 | `image_role` | string or null | No | Optional closed base value describing the image role. Valid values are `raw_scan`, `raw_photo`, `corrected_scan`, `detail`, `verso`, and `reference`. |
 | `external_links` | array | No | External link objects for the file. |
 | `extensions` | object | No | Extension container for namespaced extension blocks. |
+
+When present and non-null, `size_bytes` MUST be a nonnegative integer equal to the embedded file's uncompressed byte length. Pixel `width` and `height` MUST be positive integers; `dpi_x` and `dpi_y` MUST be finite positive numbers. These constraints validate supplied metadata and do not require decoding media to verify pixel or DPI claims. Allowed nulls remain valid.
 
 `file_kind` is required and MUST be one of:
 
@@ -688,7 +702,7 @@ Implementation-specific file workflow data, such as source-link status, derivati
 
 ### Extension Container and Extension Block
 
-Every complex OAA object MAY contain an extension container unless that object is itself an extension block.
+Every complex base OAA object MAY contain an extension container. Inside an extension block, keys are provider data rather than base fields.
 
 An extension container is serialized as the JSON member named `extensions`.
 
@@ -698,13 +712,13 @@ Extension containers MAY appear on complex OAA objects.
 
 Extension block values MUST be JSON objects.
 
-Extension blocks MUST NOT contain nested extension containers.
+Extension blocks MAY contain ordinary nested JSON, including a key named `extensions`; that key has no OAA extension-container meaning inside provider data.
 
 Readers MUST treat an absent `extensions` field the same as an empty extension container.
 
 Writers MAY omit `extensions` when the extension container would be empty.
 
-Extension block names SHOULD use reverse-DNS-style names controlled by the writer or provider. Non-normative examples include:
+Writers MUST use reverse-DNS-style namespace names for newly created extension blocks, controlled by the writer or provider. Namespace ownership is a writer responsibility, not an online lookup or reader rejection criterion. Non-normative examples include:
 
 - `com.comicartfans`
 - `com.snikt`
@@ -740,7 +754,9 @@ Provider-specific values that are alternatives to optional OAA fields SHOULD liv
 
 Extension blocks MUST NOT change the meaning of base OAA fields.
 
-An extension block MUST NOT contain a field whose name matches a present OAA base field in the same object context. If an extension block preserves a provider-specific value by using the same field name as an optional OAA base field, the corresponding base field MUST be omitted.
+An extension field MAY have the same name as a present base field. Base fields MUST remain authoritative for OAA interpretation; base-field value rules MUST NOT be imposed on unrelated keys inside provider extensions.
+
+Writers MUST place newly created provider-specific or implementation-specific fields in namespaced extensions. Existing structured source data SHOULD be preserved there; flattening it into display text is not equivalent preservation.
 
 Extension block fields MAY preserve provider-native names or raw imported values, but MUST NOT override the base field.
 
@@ -762,7 +778,7 @@ Artwork file references MUST resolve to files within the archive.
 
 Artwork-associated files MAY be any file type relevant to the artwork record. Examples include original scans or photos, corrected images, PDF receipts, email thread archives, provenance documents, videos showing creation or authentication of the artwork, and other supporting files.
 
-Manifests MUST NOT contain apparent absolute local filesystem paths, including in extension blocks.
+Actual portable file references MUST NOT be absolute local filesystem paths. Path-like prose or opaque extension text MAY produce an advisory privacy warning but MUST NOT be rejected solely on that heuristic.
 
 Portable file references MUST use archive-relative or artwork-relative paths as defined by this specification.
 
@@ -774,13 +790,13 @@ Readers MAY preserve embedded file metadata and bytes while marking the file typ
 
 OAA IDs are archive-local opaque identifiers.
 
-This specification does not require a particular ID format. Examples may use `OAA-00044` for readability, but writers MAY use any string that satisfies the ID rules and is unique within the archive.
+This specification does not require a particular ID format. Examples may use `OAA-00044` for readability, but writers MAY use any string that satisfies the ID rules and is unique within its stated record-type scope.
 
 Readers MUST NOT infer provider, ownership, chronology, permanence, or global identity from an OAA ID.
 
 OAA IDs are only guaranteed to be stable within a single archive instance. Readers SHOULD NOT assume the same artwork, gallery, or file will have the same OAA ID across separate exports, revisions, or regenerated archives.
 
-Collection IDs, gallery IDs, and artwork IDs MUST be unique within an OAA archive.
+Gallery IDs MUST be unique among galleries; artwork IDs MUST be unique among artworks. The single collection ID and identifiers of different record types MAY reuse the same string.
 
 File IDs MUST be unique within their containing artwork manifest.
 
@@ -790,9 +806,9 @@ Provider-assigned identifiers, such as CAF piece IDs, SNIKT image IDs, Raremarq 
 
 ## Dates and Times
 
-Date-only fields MUST use `YYYY-MM-DD`.
+When present and non-null, base date-only fields MUST be real calendar dates in `YYYY-MM-DD` form. These rules do not apply to unrelated extension keys.
 
-Date-time fields MUST use RFC 3339 with an explicit timezone or offset.
+Date-time base fields, where defined, MUST use RFC 3339 with an explicit timezone or offset. This rule does not impose date-time semantics on unrelated provider extension keys.
 
 Acquisition and purchase dates MAY be date-only local dates.
 
@@ -825,7 +841,7 @@ A valid OAA archive satisfies these checks:
 - If distributed as a filesystem file, the archive should use the `.oaa` extension.
 - The archive is ZIP-compatible.
 - Archive entries are not encrypted.
-- Store and Deflate compression are supported by Structural Readers.
+- All entries use Store or Deflate compression; ZIP64 is allowed.
 - Archive entry names use UTF-8 and forward slash separators.
 - Archive entry names do not begin with `/`.
 - Archive entry names do not contain empty, `.`, or `..` path segments, except for the empty final segment of explicit directory entries.
@@ -856,8 +872,8 @@ A valid OAA archive satisfies these checks:
 - External link provider identifiers follow the provider identifier grammar.
 - External link IDs are not empty.
 - External link URLs are strings; empty URLs are allowed only as the explicit no-stable-URL sentinel.
-- Manifest values do not contain apparent absolute local filesystem paths.
-- Extension block values are JSON objects and do not contain nested extension containers.
+- Actual file references are safe; path-like prose alone does not establish invalidity.
+- Extension block values are JSON objects; nested provider JSON and same-named provider fields are allowed.
 - Field values match their declared types.
 - `public_metadata.publication_status`, when present and not null, is `published_art` or `unpublished_art`.
 - `files[].file_kind` values are `raw`, `derivative`, or `supporting`.
@@ -867,7 +883,11 @@ A valid OAA archive satisfies these checks:
 - Archive paths do not contain parent-directory traversal.
 - Referenced artwork files exist inside the archive when required.
 
-Recommended validation severity:
+Archive-validity `MUST` and `MUST NOT` violations make the archive invalid. A `SHOULD` violation alone produces an advisory warning. Readers MAY recover usable content from invalid input, but MUST identify invalidity and known skipped or lost content; recovery is optional, not a conformance prerequisite.
+
+Readers MUST distinguish invalidity from unsupported versions, configured capacity limits, and destination-specific extraction limitations. A reader that stops before completing validation MUST NOT report full validation. Resource exhaustion alone is not proof of archive invalidity.
+
+Recommended validation diagnostics:
 
 | Condition | Severity | Reader behavior |
 | --- | --- | --- |
@@ -881,7 +901,7 @@ Recommended validation severity:
 | Duplicate gallery artwork membership ID | Fatal | Reject archive or affected gallery. |
 | Referenced gallery or artwork manifest missing | Fatal or record error | Reject archive or reject the affected record. |
 | Gallery reference to unknown artwork ID | Fatal or record error | Reject the affected gallery membership. |
-| Missing embedded file for `files[]` entry | Record error | Import metadata when practical and mark file missing. |
+| Missing embedded file for `files[]` entry | Invalid archive | Optional metadata recovery with explicit missing-file report. |
 | Unknown or invalid `public_metadata.publication_status` | Fatal | Reject archive or affected artwork record. |
 | Unknown or invalid `files[].file_kind` | Fatal | Reject archive or affected artwork record. |
 | Unknown or invalid `files[].image_role` | Fatal | Reject archive or affected artwork record. |
@@ -916,9 +936,7 @@ Structural and Metadata Readers MAY support no rendering at all.
 
 OAA reader conformance does not require decoding, rendering, previewing, or opening any embedded file format.
 
-A Round-Trip Implementation is both a reader and writer.
-
-A Round-Trip Implementation SHOULD preserve unknown optional fields, unknown external links, and unknown extension blocks in its internal model when practical, so they can be emitted again in future OAA exports.
+Implementations SHOULD preserve unknown optional fields, external links, and extension data when rewriting manifests. Supporting import and export or producing a Valid Archive MUST NOT alone be presented as proof of lossless preservation. Preservation claims MUST state their evidence, scope, and limitations.
 
 Reader behavior beyond the conformance level claimed is outside this file-format specification.
 
@@ -954,12 +972,6 @@ A Metadata Reader is also a Structural Reader.
 
 A Metadata Reader can import or display OAA base metadata, external links, and raw unknown extension block data when practical.
 
-### Round-Trip Implementation
-
-A Round-Trip Implementation is both a reader and writer.
-
-A Round-Trip Implementation can read OAA and later write OAA while preserving unknown external links, unknown optional fields, and extension blocks when practical.
-
 ### Conforming Writer
 
 A Conforming Writer produces Valid Archives according to this specification.
@@ -968,9 +980,13 @@ A Conforming Writer produces Valid Archives according to this specification.
 
 OAA is intended for interchange between independent original art collection platforms.
 
-New optional fields MAY be added in compatible revisions.
+Specification release `1.0.0` uses manifest version `"1.0"`. Release tags use `MAJOR.MINOR.PATCH`. Patch releases MUST NOT change manifest version, add archive-validity requirements, or retroactively invalidate conforming archives.
 
-Readers SHOULD avoid rejecting an otherwise valid archive only because it contains unknown optional fields.
+Compatible optional fields MAY be added in later 1.x revisions without changing existing semantics. New required fields, incompatible semantic changes, and additions to closed value sets require a new major schema version.
+
+Readers MUST ignore unrecognized optional fields. The existing base field set is frozen for 1.0. New shared metadata and the expanded lossless-preservation profile remain deferred.
+
+OAA 0.1 archives are not 1.0 Valid Archives. Implementations MAY separately declare 0.1 compatibility or migration support; migration is not mandatory. The historical 0.1 contract remains available in release `v0.1.2`, the unchanged [0.1 schema](schema/oaa-manifest.schema.json), and [0.1 requirements](requirements/oaa-0.1.yaml).
 
 ## Security and Privacy Considerations
 
@@ -978,9 +994,9 @@ Readers MUST treat archive contents as untrusted input.
 
 Readers MUST treat embedded artwork-associated files as untrusted content.
 
-Archive extraction MUST NOT write outside the selected destination.
+Archive extraction MUST NOT write outside the selected destination. Readers that extract MUST detect destination-specific collisions, including case and Unicode normalization collisions, before writing content and MUST NOT silently overwrite colliding entries. Readers MUST also prevent traversal through existing destination symlinks or other filesystem redirections. Archive identities remain case-sensitive; inability to represent safe distinct paths on a destination is not itself archive invalidity. Conformance does not require extraction onto every filesystem.
 
-Manifest values MUST NOT contain apparent absolute local filesystem paths.
+Actual archive and file references MUST be safe. Apparent local paths in prose or opaque extension data are privacy warnings, not automatic validity failures.
 
 Manifest URL fields MUST be used for URLs only. They MUST NOT use `file://` URLs or local filesystem paths as portable file references.
 
@@ -990,13 +1006,11 @@ Readers that open or render embedded files SHOULD use hardened rendering paths a
 
 Writers SHOULD avoid including credentials, browser cookies, or unrelated private files.
 
-Readers SHOULD enforce reasonable limits on archive size, uncompressed size, entry count, manifest size, JSON nesting depth, and individual file size.
-
-Readers SHOULD detect and reject archives whose declared or actual decompressed size is unreasonable for the importing context.
+Readers MUST enforce declared resource limits on archive size, uncompressed size, entry count, manifest size, JSON nesting depth, and individual file size. Reads and decompression MUST be bounded, including for unreferenced content. Limits are implementation-configurable; OAA defines no universal capacity threshold. Declared and actual decompressed sizes must be checked without unbounded allocation. Exceeding limits MUST be reported as incomplete processing, not proof of invalidity.
 
 ## Examples
 
-Draft examples live in [examples/](examples/).
+OAA 1.0 examples live in [examples/](examples/).
 
 Complete minimal manifest examples are included below for convenience.
 
@@ -1004,7 +1018,7 @@ Complete minimal manifest examples are included below for convenience.
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "example-collection",
   "name": "Example Collection",
   "external_links": [],
@@ -1031,7 +1045,7 @@ Complete minimal manifest examples are included below for convenience.
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "example-gallery",
   "name": "Example Gallery",
   "external_links": [],
@@ -1049,7 +1063,7 @@ Complete minimal manifest examples are included below for convenience.
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "OAA-00001",
   "title": "Example Artwork",
   "external_links": [],
@@ -1066,7 +1080,7 @@ Example `.oacollection`:
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "example-collection",
   "name": "Example Collection",
   "external_links": [],
@@ -1099,7 +1113,7 @@ Example `galleries/AP/.oagallery`:
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "gallery-ap",
   "name": "AP",
   "external_links": [],
@@ -1117,7 +1131,7 @@ Example `galleries/For Sale/.oagallery`:
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "gallery-for-sale",
   "name": "For Sale",
   "external_links": [],
@@ -1135,7 +1149,7 @@ Example `artworks/OAA-00044/.oaartwork`:
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "OAA-00044",
   "title": "Example Shared Artwork",
   "external_links": [],

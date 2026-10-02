@@ -22,8 +22,8 @@ When creating an OAA archive from an application database, a writer should use t
 - Stable provider object identifiers and canonical object URLs go in `external_links`.
 - Provider-specific controlled IDs, source-image details, and provider-backed metadata fields not yet represented by base OAA fields go in provider extension blocks.
 - Application implementation metadata goes in an application-owned extension block, such as `app.oa-curator`.
-- Extension blocks should not echo values already carried by OAA base fields.
-- Absolute local filesystem paths, such as source folders, linked-file paths, current file paths, and derivative output paths, must not be emitted into OAA manifests.
+- Avoid unnecessary copies of base values, but provider-native fields may use the same names or retain distinct values. Base fields remain authoritative for OAA meaning. Nested `extensions` inside a provider block is ordinary opaque provider JSON.
+- Avoid exposing local filesystem paths in prose or provider history. Actual file references must be safe and portable; path-like prose alone is a privacy warning, not an invalid archive.
 
 Recommended provider keys:
 
@@ -125,7 +125,7 @@ Portable public fields should use base OAA fields. CAF controlled IDs remain in 
 }
 ```
 
-CAF `publication_status_id` values can represent CAF-specific publication states. The portable OAA base values are controlled as `published_art` and `unpublished_art`; CAF-specific states such as `CAF Member Art` should remain in `public_metadata.extensions.com.comicartfans.publication_status`. When the CAF extension block uses `publication_status`, omit base `public_metadata.publication_status`.
+CAF `publication_status_id` values can represent CAF-specific publication states. The portable OAA base values are controlled as `published_art` and `unpublished_art`; CAF-specific states such as `CAF Member Art` should remain in `public_metadata.extensions.com.comicartfans.publication_status`. A known portable base value may coexist with the provider-native value; the base field controls OAA meaning. Omit the optional base field when no reliable mapping is known.
 
 ```json
 {
@@ -750,7 +750,7 @@ Private collection-management metadata should remain in base OAA private metadat
 
 ### File Assets And Derivatives
 
-Application file assets map to base OAA artwork file objects. Local paths must not be emitted; use `relative_path` for the archive-embedded file.
+Application file assets map to base OAA artwork file objects. Use a safe artwork-relative `relative_path` for the embedded file, never an absolute local path.
 
 ```json
 {
@@ -801,7 +801,7 @@ Common application `source_kind` values include `linked`, `copied`, `imported`, 
 
 Applications may store local operational fields that are useful inside the application but are not portable OAA metadata.
 
-Do not emit these values into OAA manifests when they contain absolute local filesystem paths:
+Review these values for private local paths before including them in opaque history or notes; they cannot serve as portable file references:
 
 - `artwork.source_folder`
 - `file_asset.original_path`
@@ -810,4 +810,4 @@ Do not emit these values into OAA manifests when they contain absolute local fil
 - `file_operation_log.old_path`
 - `file_operation_log.new_path`
 
-If a writer wants to preserve file-operation history, it must first convert the history to archive-relative paths or logical file IDs. Otherwise, omit it.
+Prefer logical file IDs or safe relative references when preserving file-operation history. Opaque historical text may be retained when appropriate, but path-like strings should trigger privacy review and are not permission to access local files. Unknown blocks and supporting files are not automatically public, even when `is_public` is true. Extensions under `private_metadata` remain private.

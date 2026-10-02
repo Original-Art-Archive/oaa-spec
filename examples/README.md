@@ -2,9 +2,9 @@
 
 # Examples
 
-This directory contains draft OAA folder-layout examples.
+This directory contains OAA 1.0 1.0 folder-layout examples.
 
-The current examples are draft fixtures for the 0.1 Draft. They are intended to demonstrate readable archive layouts and manifest patterns while the format remains under review.
+The current directory fixtures use manifest version `"1.0"`. They demonstrate the 1.0 contract. Historical generated archives remain unchanged. Download packaged examples from the [release assets](../docs/release-1.0.0.md).
 
 See [index.md](index.md) for a file catalog of the example tree.
 

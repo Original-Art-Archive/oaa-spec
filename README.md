@@ -6,9 +6,9 @@
 
 # Original Art Archive Format
 
-> Status: 0.1 Draft. This format is published for review and early implementation feedback. It is not the final 1.0 specification.
+> Status: stable specification release 1.0.0; manifest version `"1.0"`.
 
-The Original Art Archive (OAA) Format is a draft archive and interchange format for transferring original art collection folders between collection platforms.
+The Original Art Archive (OAA) Format is an archive and interchange format for transferring original art collection folders between collection platforms.
 
 An `.oaa` file is a ZIP-based archive container with a defined internal structure and a root `mimetype` file identifying it as an Original Art Archive package.
 
@@ -22,9 +22,9 @@ This repository is maintained by Remgrandt Works.
 
 - [SPEC.md](SPEC.md) defines the archive format and requirements outside manifest-local JSON validation.
 - [docs/](docs/index.md) contains supporting documentation for implementers.
-- [examples/](examples/README.md) contains draft example folder layouts and manifests.
-- [schema/](schema/README.md) contains the normative JSON Schema for OAA 0.1 dot-manifest structure.
-- [requirements/](requirements/README.md) contains validator requirement traceability for the 0.1 Draft.
+- [examples/](examples/README.md) contains 1.0 folder layouts and manifests.
+- [schema/](schema/README.md) contains the normative 1.0 JSON Schema and preserved historical 0.1 schema.
+- [requirements/](requirements/README.md) contains requirement traceability for 1.0 and the historical 0.1 catalog.
 - [proposals/](proposals/README.md) contains the proposal process for draft format changes.
 - [assets/](assets/README.md) contains OAA visual assets and mark-use guidance.
 - [LICENSES/](LICENSES/) contains the full license texts.
@@ -32,7 +32,9 @@ This repository is maintained by Remgrandt Works.
 
 Implementers should treat [SPEC.md](SPEC.md) as authoritative for the archive format as a whole. The JSON Schema is authoritative for manifest-local JSON structure.
 
-The reference validator is staged separately at [Original-Art-Archive/oaa-validator](https://github.com/Original-Art-Archive/oaa-validator).
+See the [release notes and verification scope](docs/release-1.0.0.md) and [0.1-to-1.0 migration notes](docs/migration-0.1-to-1.0.md).
+
+The reference validator is maintained separately at [Original-Art-Archive/oaa-validator](https://github.com/Original-Art-Archive/oaa-validator).
 
 OAA is intended to be a neutral interchange format. It is not owned by any one application or platform.
 

@@ -8,7 +8,7 @@ An `.oaa` archive is a ZIP-compatible package of a portable collection folder. I
 
 OAA is intended to allow independent collection platforms to exchange collection folders without binding the format to one application.
 
-## Draft Layout
+## Recommended Layout
 
 ```text
 mimetype
@@ -28,9 +28,11 @@ Collection gallery order and gallery artwork order are represented by array orde
 
 The `mimetype` file contains `application/vnd.original-art-archive+zip` and identifies the package as an Original Art Archive.
 
-The 0.1 draft media type is provisional until registered with IANA.
+Use of the media type does not establish IANA registration. Registration remains an administrative follow-up.
 
-For the 0.1 draft, all manifests use `schema_version` string `"0.1"`.
+For release 1.0.0, all manifests use `schema_version` string `"1.0"`.
+
+The root collection manifest is authoritative; the folder names above are recommendations. Empty collections and galleries, metadata-only artworks, and safe unreferenced files are allowed.
 
 ## Metadata Layers
 

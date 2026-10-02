@@ -1,0 +1,577 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Original-Art-Archive/oaa-spec/v1.0.0/schema/1.0/oaa-manifest.schema.json",
+  "title": "Original Art Archive 1.0 Dot-Manifest Schema",
+  "description": "Normative OAA 1.0 manifest structure. Select the kind-specific definition from the manifest path. Format and archive-level semantics also require SPEC.md checks.",
+  "$comment": "SPDX-License-Identifier: CC0-1.0 OR MIT. SPEC.md remains normative for archive layout, cross-file integrity, ZIP behavior, security, and semantic reader/writer requirements.",
+  "$defs": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "textString": {
+      "type": "string"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonBlankString": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "nullableString": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/textString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dateOnly": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(?![\\s\\S])",
+      "format": "date"
+    },
+    "manifestValue": {},
+    "archiveRelativePath": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "pattern": "^/"
+              },
+              {
+                "pattern": "^[A-Za-z]:"
+              },
+              {
+                "pattern": "\\\\"
+              },
+              {
+                "pattern": "//"
+              },
+              {
+                "pattern": "(^|/)\\.((?![\\s\\S])|/)"
+              },
+              {
+                "pattern": "(^|/)\\.\\.((?![\\s\\S])|/)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "fileRelativePath": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/archiveRelativePath"
+        },
+        {
+          "not": {
+            "pattern": "/(?![\\s\\S])"
+          }
+        }
+      ]
+    },
+    "galleryManifestPath": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/archiveRelativePath"
+        },
+        {
+          "pattern": "^[\\s\\S]+/\\.oagallery(?![\\s\\S])"
+        }
+      ]
+    },
+    "artworkManifestPath": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/archiveRelativePath"
+        },
+        {
+          "pattern": "^[\\s\\S]+/\\.oaartwork(?![\\s\\S])"
+        }
+      ]
+    },
+    "externalLinks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/externalLink"
+      }
+    },
+    "externalLink": {
+      "type": "object",
+      "required": [
+        "provider",
+        "id",
+        "url"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)(?!.*\\.(?![\\s\\S]))[a-z0-9._-]+(?![\\s\\S])"
+        },
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:",
+              "not": {
+                "pattern": "^[Ff][Ii][Ll][Ee]:"
+              }
+            }
+          ]
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "extensionContainer": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/extensionBlock"
+      }
+    },
+    "extensionBlock": {
+      "type": "object"
+    },
+    "collectionGalleryReference": {
+      "type": "object",
+      "required": [
+        "id",
+        "path"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "$ref": "#/$defs/galleryManifestPath"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "collectionArtworkReference": {
+      "type": "object",
+      "required": [
+        "id",
+        "path"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "path": {
+          "$ref": "#/$defs/artworkManifestPath"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "galleryArtworkReference": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "artistCredit": {
+      "type": "object",
+      "anyOf": [
+        {
+          "required": [
+            "display_name"
+          ],
+          "properties": {
+            "display_name": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        {
+          "required": [
+            "first_name"
+          ],
+          "properties": {
+            "first_name": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        {
+          "required": [
+            "last_name"
+          ],
+          "properties": {
+            "last_name": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        {
+          "required": [
+            "role"
+          ],
+          "properties": {
+            "role": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "display_name": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "first_name": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "last_name": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "role": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "publicArtworkMetadata": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "for_sale_status": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "media": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "artwork_type": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "publication_status": {
+          "enum": [
+            "published_art",
+            "unpublished_art",
+            null
+          ]
+        },
+        "is_public": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "artist_credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artistCredit"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "privateArtworkMetadata": {
+      "type": "object",
+      "properties": {
+        "purchase_price": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "estimated_value": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "purchase_date": {
+          "$ref": "#/$defs/dateOnly"
+        },
+        "provenance": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "personal_notes": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "artworkFile": {
+      "type": "object",
+      "required": [
+        "id",
+        "relative_path",
+        "file_kind"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "relative_path": {
+          "$ref": "#/$defs/fileRelativePath"
+        },
+        "file_kind": {
+          "enum": [
+            "raw",
+            "derivative",
+            "supporting"
+          ]
+        },
+        "file_name": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "dpi_x": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "dpi_y": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "format": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "media_type": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "is_primary": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "image_role": {
+          "enum": [
+            "raw_scan",
+            "raw_photo",
+            "corrected_scan",
+            "detail",
+            "verso",
+            "reference",
+            null
+          ]
+        },
+        "external_links": {
+          "$ref": "#/$defs/externalLinks"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "collectionManifest": {
+      "title": "OAA collection manifest",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "id",
+        "name",
+        "galleries",
+        "artworks"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/schemaVersion"
+        },
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "name": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "external_links": {
+          "$ref": "#/$defs/externalLinks"
+        },
+        "galleries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/collectionGalleryReference"
+          }
+        },
+        "artworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/collectionArtworkReference"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "galleryManifest": {
+      "title": "OAA gallery manifest",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "id",
+        "name",
+        "artworks"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/schemaVersion"
+        },
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "name": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "external_links": {
+          "$ref": "#/$defs/externalLinks"
+        },
+        "artworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/galleryArtworkReference"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    },
+    "artworkManifest": {
+      "title": "OAA artwork manifest",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "id",
+        "title",
+        "files"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/schemaVersion"
+        },
+        "id": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "title": {
+          "$ref": "#/$defs/nonBlankString"
+        },
+        "external_links": {
+          "$ref": "#/$defs/externalLinks"
+        },
+        "public_metadata": {
+          "$ref": "#/$defs/publicArtworkMetadata"
+        },
+        "private_metadata": {
+          "$ref": "#/$defs/privateArtworkMetadata"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artworkFile"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionContainer"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/manifestValue"
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/collectionManifest"
+    },
+    {
+      "$ref": "#/$defs/galleryManifest"
+    },
+    {
+      "$ref": "#/$defs/artworkManifest"
+    }
+  ]
+}

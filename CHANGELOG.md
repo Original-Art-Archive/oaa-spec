@@ -2,6 +2,18 @@
 
 # Changelog
 
+## 1.0.0 — 2026-10-01
+
+- Fixes the Deflate EOF hang and moves version dispatch ahead of 1.0-specific container checks, retaining bounded root probing and 1.0 compression rejection. The normative contract is unchanged.
+- Integrates the accepted pre-1.0 decisions; manifests use `"1.0"` with a versioned schema. Historical 0.1 schema/catalog remain unchanged.
+- Freezes existing base fields and closed values; defers new structured metadata and the expanded preservation profile.
+- Clarifies root-manifest authority, optional layouts and empty structures, safe extras, ID scopes, unknown providers, and opaque independent extension blocks.
+- Tightens numeric values, real dates, absolute non-local URLs, nonblank required strings, JSON parsing, and actual embedded byte-size checks.
+- Distinguishes invalid input from advisory findings, unsupported versions, and incomplete processing.
+- Requires Store/Deflate, bounded ZIP64 processing, safe entry types and path relationships, extraction collision protection, and private-by-default handling.
+- Defines the four core conformance classes and removes the ambiguous best-effort Round-Trip class; preservation claims need scoped evidence.
+- Aligns the reference validator, conformance fixtures, traceability, examples, migration notes, and release verification.
+
 ## 0.1.2
 
 - Updates maintainer, copyright, and mark-policy references to Remgrandt Works.

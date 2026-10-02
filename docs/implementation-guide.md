@@ -12,10 +12,11 @@ Software that reads an `.oaa` archive generally needs to:
 - Treat `mimetype` as the archive identity anchor and not rely on filename extension alone.
 - Confirm the root `mimetype` file contains `application/vnd.original-art-archive+zip`.
 - Reject encrypted archive entries.
-- Support Store and Deflate ZIP compression methods.
+- Support Store, Deflate, and ZIP64 within declared capacities; reject other compression methods.
 - Read the collection manifest before processing child folders.
-- Confirm each manifest uses a supported `schema_version`.
+- Confirm each manifest uses an explicitly supported `schema_version`; report unsupported versions separately from invalid archives.
 - Read gallery and artwork manifests from the paths listed in the collection manifest.
+- Do not infer records from unreferenced files. Safe extras, empty registries, metadata-only artworks, and artworks without galleries are allowed.
 - Resolve gallery artwork membership by artwork ID.
 - Resolve collection `galleries[].path` and `artworks[].path` values as archive-relative paths.
 - Use collection `galleries[]` order as gallery display order when practical.
@@ -35,17 +36,23 @@ Software that reads an `.oaa` archive generally needs to:
 - Display external links with empty URLs as metadata, not clickable links.
 - Preserve and optionally display unknown external links generically.
 - Ignore unknown extension blocks.
+- Treat extension blocks as opaque JSON, including nested provider JSON and same-named fields; base fields remain authoritative.
 - Preserve unknown external links and extension blocks when practical if the implementation later writes OAA archives.
 - Validate all archive paths.
 - Validate paths before Unicode normalization.
 - Reject absolute paths.
 - Reject parent-directory traversal.
-- Reject manifests that contain apparent absolute local filesystem paths, including inside extension blocks.
+- Warn about apparent local paths in prose or opaque extensions as a privacy concern; reject unsafe actual archive/file references.
+- Reject special entries, symlinks, duplicate paths, and file/directory conflicts before reading payloads.
+- Bound archive metadata, entry counts, every decompression/read, file and total sizes, manifest sizes, and JSON nesting. A capacity stop is incomplete processing, not proof of invalidity.
+- Check declared embedded sizes against actual uncompressed bytes, numeric ranges, nonblank required strings, actual calendar dates, and absolute non-local URLs. Reject duplicate JSON members and non-JSON numeric tokens.
 - Ignore explicit ZIP directory entries when interpreting archive structure.
 - Treat embedded artwork-associated files as untrusted. Avoid opening or rendering embedded files automatically.
 - Treat media decoding and rendering as implementation-specific behavior outside OAA base conformance.
 
-What the software does after reading the archive is outside the file-format specification.
+Reader safety and privacy obligations still apply after parsing. Do not automatically fetch URLs, execute or render embedded files, or publish unknown extension data and supporting attachments. `is_public` is not blanket disclosure permission. Keep `private_metadata`, including its extensions, out of public output unless separately authorized.
+
+If extracting, detect destination case/Unicode collisions and existing symlinks or other filesystem redirections before writing. Do not overwrite colliding entries or escape the destination. A safe archive may be unrepresentable on a particular filesystem without being invalid. A non-extracting reader can avoid this entire write surface.
 
 ## Writing Archives
 
@@ -53,8 +60,8 @@ Software that writes an `.oaa` archive generally needs to create a valid archive
 
 - Root `mimetype`
 - Root `.oacollection`
-- Gallery folders under `galleries/` containing `.oagallery`
-- Artwork folders under `artworks/` containing `.oaartwork`
+- Referenced gallery folders containing `.oagallery` (conventionally under `galleries/`)
+- Referenced artwork folders containing `.oaartwork` (conventionally under `artworks/`)
 - Associated files in artwork folders
 - Gallery artwork membership references by artwork ID
 - Artwork file references through `files[].relative_path`
@@ -70,3 +77,5 @@ Software that writes an `.oaa` archive generally needs to create a valid archive
 - No unsafe archive entry paths
 
 For a collection folder that already follows the OAA layout, creating an `.oaa` archive can be as simple as packaging the collection folder contents into a ZIP-compatible container, adding the root `mimetype` entry, and using the `.oaa` extension.
+
+Validate the emitted archive, not only the input folder. Preserve structured source data in extensions when the base model cannot represent it; flattening it into title/notes is not lossless preservation. State the scope and evidence for any preservation claim. See [conformance](conformance.md) and the [release verification scope](release-1.0.0.md).
